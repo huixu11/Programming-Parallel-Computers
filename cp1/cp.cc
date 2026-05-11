@@ -6,7 +6,7 @@ This is the function you need to implement. Quick reference:
 - the correlation between rows i and j has to be stored in result[i + j*ny]
 - only elements with 0 <= j <= i < ny need to be filled
 */
-extern "C" double sqrt(double);
+#include <cmath>
 
 void normalize_mean_0(double *data_v, const float *data, int i, int nx) {
     double sum = 0.0;
@@ -25,7 +25,7 @@ void sum_square_equal_1(double *data_v, int i, int nx) {
         double value = data_v[x + i*nx];
         sum_square += value * value;
     }
-    double norm_factor = sqrt(sum_square);
+    double norm_factor = std::sqrt(sum_square);
     if (norm_factor == 0.0) {
         for (int x = 0; x < nx; x++) {
             data_v[x + i*nx] = 0.0;
