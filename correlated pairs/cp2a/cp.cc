@@ -6,92 +6,117 @@ This is the function you need to implement. Quick reference:
 - the correlation between rows i and j has to be stored in result[i + j*ny]
 - only elements with 0 <= j <= i < ny need to be filled
 */
-# include <cmath>
 
-void normalize_mean_0(double *data_v, const float *data, int i, int nx) {
-    double s0 = 0.0;
-    double s1 = 0.0;
-    double s2 = 0.0;
-    double s3 = 0.0;
-    int x = 0;
-    for (; x + 3 < nx; x += 4) {
-        s0 += static_cast<double>(data[x + i*nx]);
-        s1 += static_cast<double>(data[x + 1 + i*nx]);
-        s2 += static_cast<double>(data[x + 2 + i*nx]);
-        s3 += static_cast<double>(data[x + 3 + i*nx]);
-    }
-    double sum = s0 + s1 + s2 + s3;
-    for (; x < nx; x++) {
-        sum += static_cast<double>(data[x + i*nx]);
-    }
-    double mean = sum / nx;
-    for (int x = 0; x < nx; x++) {
-        data_v[x + i * nx] = static_cast<double>(data[x + i * nx]) - mean;
-    }
-}
+#include <math.h>
 
+void minus_mean_row(int ny, int nx, const float *data, double *matrix) {
+    for (int y = 0; y < ny; y++) {
+        double mean0 = 0;
+        double mean1 = 0;
+        double mean2 = 0;
+        double mean3 = 0;
+        
+        int x = 0;
 
-void sum_square_equal_1(double *data_v, int i, int nx) {
-    double s0 = 0.0;
-    double s1 = 0.0;
-    double s2 = 0.0;
-    double s3 = 0.0;
-    int x = 0;
-    for (; x + 3 < nx; x += 4) {
-        double v0 = data_v[x + i * nx];
-        double v1 = data_v[x + 1 + i * nx];
-        double v2 = data_v[x + 2 + i * nx];
-        double v3 = data_v[x + 3 + i * nx];
-        s0 += v0 * v0;
-        s1 += v1 * v1;
-        s2 += v2 * v2;
-        s3 += v3 * v3;
-    }
-    double sum_square = s0 + s1 + s2 + s3;
-    for (; x < nx; x++) {
-        double value = data_v[x + i * nx];
-        sum_square += value * value;
-    }
-    double norm_factor = std::sqrt(sum_square);
-    if (norm_factor == 0.0) {
-        for (int x = 0; x < nx; x++) {
-            data_v[x + i * nx] = 0.0;
+        for (; x + 3 < nx; x += 4) {
+            mean0 += data[x + y * nx];
+            mean1 += data[x + 1 + y * nx];
+            mean2 += data[x + 2 + y * nx];
+            mean3 += data[x + 3 + y * nx];
         }
-        return;
-    }
-    for (int x = 0; x < nx; x++) {
-        data_v[x + i * nx] /= norm_factor;
+        double mean = mean0 + mean1 + mean2 + mean3;
+        for (; x < nx; x++) {
+            mean += data[x + y * nx];
+        }
+
+        mean /= nx;
+        
+        x = 0;
+        for (; x + 3 < nx; x += 4) {
+            matrix[x + y * nx] = data[x + y * nx] - mean;
+            matrix[x + 1 + y * nx] = data[x + 1 + y * nx] - mean;
+            matrix[x + 2 + y * nx] = data[x + 2 + y * nx] - mean;
+            matrix[x + 3 + y * nx] = data[x + 3 + y * nx] - mean;
+        }
+        for (; x < nx; x++) {
+            matrix[x + y * nx] = data[x + y * nx] - mean;
+        }
     }
 }
 
+void normalize_row(int ny, int nx, double *matrix) {
+    for (int y = 0; y < ny; y++) {
+        double size0 = 0;
+        double size1 = 0;
+        double size2 = 0;
+        double size3 = 0;
+        int x = 0;
+        for (; x + 3 < nx; x += 4) {
+            size0 += matrix[x + y * nx] * matrix[x + y * nx];
+            size1 += matrix[x + 1 + y * nx] * matrix[x + 1 + y * nx];
+            size2 += matrix[x + 2 + y * nx] * matrix[x + 2 + y * nx];
+            size3 += matrix[x + 3 + y * nx] * matrix[x + 3 + y * nx];
+        }
+        double size = size0 + size1 + size2 + size3;
+        for (; x < nx; x++) {
+            size += matrix[x + y * nx] * matrix[x + y * nx];
+        }
+        size = sqrt(size);
 
-void correlate(int ny, int nx, const float *data, float *result) {
-    double *data_v = new double[ny * nx];
-    for (int i = 0; i < ny; i++) {
-        normalize_mean_0(data_v, data, i, nx);
-        sum_square_equal_1(data_v, i, nx);
+        x = 0;
+        for (; x + 3 < nx; x += 4) {
+            if (size == 0.0) {
+                matrix[x + y * nx] = 0.0;
+                matrix[x + 1 + y * nx] = 0.0;
+                matrix[x + 2 + y * nx] = 0.0;
+                matrix[x + 3 + y * nx] = 0.0;
+            } else {
+                matrix[x + y * nx] /= size;
+                matrix[x + 1 + y * nx] /= size;
+                matrix[x + 2 + y * nx] /= size;
+                matrix[x + 3 + y * nx] /= size;
+            }
+        }
+        for (; x < nx; x++) {
+            if (size == 0.0) {
+                matrix[x + y * nx] = 0.0;
+            } else {
+                matrix[x + y * nx] /= size;
+            }
+        }
     }
+}
+
+void matrix_mult(int ny, int nx, double *matrix, float *result) {
     for (int i = 0; i < ny; i++) {
         for (int j = 0; j <= i; j++) {
-            double s0 = 0.0;
-            double s1 = 0.0;
-            double s2 = 0.0;
-            double s3 = 0.0;
+            double sum_square0 = 0.0;
+            double sum_square1 = 0;
+            double sum_square2 = 0;
+            double sum_square3 = 0;
+            int k = 0;
 
-            int x = 0;
-            for (; x + 3 < nx; x += 4) {
-                s0 += data_v[x + i * nx] * data_v[x + j * nx];
-                s1 += data_v[x + 1 + i * nx] * data_v[x + 1 + j * nx];
-                s2 += data_v[x + 2 + i * nx] * data_v[x + 2 + j * nx];
-                s3 += data_v[x + 3 + i * nx] * data_v[x + 3 + j * nx];
+            for (; k + 3 < nx; k+=4) {
+                sum_square0 += matrix[k + i * nx] * matrix[k + j * nx];
+                sum_square1 += matrix[k + 1 + i * nx] * matrix[k + 1 + j * nx];
+                sum_square2 += matrix[k + 2 + i * nx] * matrix[k + 2 + j * nx];
+                sum_square3 += matrix[k + 3 + i * nx] * matrix[k + 3 + j * nx];
             }
-            double sum = s0 + s1 + s2 + s3;
-            // add the items that are not been added yet
-            for (; x < nx; x++) {
-                sum += data_v[x + i * nx] * data_v[x + j * nx];
+            double sum_square = sum_square0 + sum_square1 + sum_square2 + sum_square3;
+
+            for (; k < nx; k++) {
+                sum_square += matrix[k + i * nx] * matrix[k + j * nx];
             }
-            result[i + j * ny] = static_cast<float>(sum);
+
+            result[i + j * ny] = static_cast<float>(sum_square);
         }
     }
-    delete[] data_v;
+}
+
+void correlate(int ny, int nx, const float *data, float *result) {
+    double *matrix = new double[ny * nx];
+    minus_mean_row(ny, nx, data, matrix);
+    normalize_row(ny, nx, matrix);
+    matrix_mult(ny, nx, matrix, result);
+    delete[] matrix;
 }
