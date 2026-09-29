@@ -64,23 +64,24 @@ void normalize_row(int ny, int nx, double *matrix) {
         size = sqrt(size);
 
         x = 0;
-        for (; x + 3 < nx; x += 4) {
-            if (size == 0.0) {
+        if (size == 0.0) {
+            for (; x + 3 < nx; x+=4) {
                 matrix[x + y * nx] = 0.0;
                 matrix[x + 1 + y * nx] = 0.0;
                 matrix[x + 2 + y * nx] = 0.0;
                 matrix[x + 3 + y * nx] = 0.0;
-            } else {
+            }
+            for (; x < nx; x++) {
+                matrix[x + y * nx] = 0.0;
+            }
+        } else {
+            for (; x + 3 < nx; x+=4) {
                 matrix[x + y * nx] /= size;
                 matrix[x + 1 + y * nx] /= size;
                 matrix[x + 2 + y * nx] /= size;
                 matrix[x + 3 + y * nx] /= size;
             }
-        }
-        for (; x < nx; x++) {
-            if (size == 0.0) {
-                matrix[x + y * nx] = 0.0;
-            } else {
+            for (; x < nx; x++) {
                 matrix[x + y * nx] /= size;
             }
         }

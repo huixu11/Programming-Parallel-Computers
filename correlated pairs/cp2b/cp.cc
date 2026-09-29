@@ -10,6 +10,7 @@ This is the function you need to implement. Quick reference:
 #include <math.h>
 
 void minus_mean_row(int ny, int nx, const float *data, double *matrix) {
+    #pragma omp parallel for
     for (int y = 0; y < ny; y++) {
         double mean = 0;
         for (int x = 0; x < nx; x++) {
@@ -23,6 +24,7 @@ void minus_mean_row(int ny, int nx, const float *data, double *matrix) {
 }
 
 void normalize_row(int ny, int nx, double *matrix) {
+    #pragma omp parallel for
     for (int y = 0; y < ny; y++) {
         double size = 0;
         for (int x = 0; x < nx; x++) {
@@ -42,6 +44,7 @@ void normalize_row(int ny, int nx, double *matrix) {
 }
 
 void matrix_mult(int ny, int nx, double *matrix, float *result) {
+    #pragma omp parallel for schedule(dynamic)
     for (int i = 0; i < ny; i++) {
         for (int j = 0; j <= i; j++) {
             double sum_square = 0.0;
