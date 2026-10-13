@@ -78,7 +78,7 @@ static void matrix_mult_vector_column(int ny, int nx, std::vector<double4_t> &pa
         const std::size_t base_a = static_cast<std::size_t>(bi) * static_cast<std::size_t>(nx);
         for (int bj = 0; bj <= bi; bj++) {
             const std::size_t base_b = static_cast<std::size_t>(bj) * static_cast<std::size_t>(nx);
-            double4_t vv[4]= {0.0, 0.0, 0.0, 0.0};
+            double4_t vv[4]= {};
             for (int k = 0; k < nx; k++) {
                 const double4_t val_a = packed[base_a + static_cast<std::size_t>(k)];
                 const double4_t val_b = packed[base_b + static_cast<std::size_t>(k)];
